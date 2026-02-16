@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Dot - Simple Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        
+        .game-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        #game-board {
+            width: 600px;
+            height: 400px;
+            border: 3px solid #333;
+            position: relative;
+            background-color: #fff;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .dot {
+            width: 50px;
+            height: 50px;
+            background-color: #ff6b6b;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        
+        .dot:hover {
+            transform: scale(1.1);
+        }
+        
+        .score-container {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        
+        .timer {
+            font-size: 18px;
+            color: #666;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .instructions {
+            max-width: 600px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Catch the Dot!</h1>
+        <div class="score-container">
+            <span>Score: </span><span id="score">0</span>
+        </div>
+        <div class="timer">
+            <span>Time left: </span><span id="time">30</span>s
+        </div>
+        <div id="game-board"></div>
+        <button id="start-btn">Start Game</button>
+        <button id="reset-btn">Reset Game</button>
+    </div>
+    
+    <div class="instructions">
+        <h3>How to Play:</h3>
+        <p>Click on the red dots as fast as you can! Each dot gives you 1 point. You have 30 seconds to catch as many dots as possible.</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameBoard = document.getElementById('game-board');
+            const scoreDisplay = document.getElementById('score');
+            const timeDisplay = document.getElementById('time');
+            const startBtn = document.getElementById('start-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            
+            let score = 0;
+            let timeLeft = 30;
+            let gameActive = false;
+            let timer;
+            let dotInterval;
+            
+            // Create a dot element
+            function createDot() {
+                if (!gameActive) return;
+                
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                
+                // Random position within game board
+                const maxX = gameBoard.clientWidth - 50;
+                const maxY = gameBoard.clientHeight - 50;
+                
+                const posX = Math.floor(Math.random() * maxX);
+                const posY = Math.floor(Math.random() * maxY);
+                
+                dot.style.left = `${posX}px`;
+                dot.style.top = `${posY}px`;
+                
+                // Add click event to increase score
+                dot.addEventListener('click', () => {
+                    if (gameActive) {
+                        score++;
+                        scoreDisplay.textContent = score;
+                        dot.remove();
+                    }
+                });
+                
+                gameBoard.appendChild(dot);
+                
+                // Remove dot after some time if not clicked
+                setTimeout(() => {
+                    if (dot.parentNode) {
+                        dot.remove();
+                    }
+                }, 2000);
+            }
+            
+            // Start the game
+            function startGame() {
+                if (gameActive) return;
+                
+                // Reset game state
+                score = 0;
+                timeLeft = 30;
+                scoreDisplay.textContent = score;
+                timeDisplay.textContent = timeLeft;
+                
+                // Clear any existing dots
+                while (gameBoard.firstChild) {
+                    gameBoard.removeChild(gameBoard.firstChild);
+                }
+                
+                gameActive = true;
+                startBtn.disabled = true;
+                
+                // Create dots at intervals
+                dotInterval = setInterval(createDot, 800);
+                
+                // Start timer
+                timer = setInterval(() => {
+                    timeLeft--;
+                    timeDisplay.textContent = timeLeft;
+                    
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }, 1000);
+            }
+            
+            // End the game
+            function endGame() {
+                gameActive = false;
+                clearInterval(timer);
+                clearInterval(dotInterval);
+                startBtn.disabled = false;
+                
+                // Remove all remaining dots
+                while (gameBoard.firstChild) {
+                    gameBoard.removeChild(gameBoard.firstChild);
+                }
+                
+                alert(`Game Over! Your final score is: ${score}`);
+            }
+            
+            // Reset the game
+            function resetGame() {
+                gameActive = false;
+                clearInterval(timer);
+                clearInterval(dotInterval);
+                
+                // Clear all dots
+                while (gameBoard.firstChild) {
+                    gameBoard.removeChild(gameBoard.firstChild);
+                }
+                
+                score = 0;
+                timeLeft = 30;
+                scoreDisplay.textContent = score;
+                timeDisplay.textContent = timeLeft;
+                startBtn.disabled = false;
+            }
+            
+            // Event listeners
+            startBtn.addEventListener('click', startGame);
+            resetBtn.addEventListener('click', resetGame);
+        });
+    </script>
+</body>
+</html>
